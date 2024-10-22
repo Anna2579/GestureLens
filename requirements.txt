@@ -1,4 +1,4 @@
-cvzone
+cvzone==1.5.6
 opencv-python
 numpy
 Pillow
