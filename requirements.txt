@@ -1,7 +1,6 @@
-cvzone==1.5.6
-opencv-python-headless
+cvzone
+opencv-python
 numpy
 Pillow
 streamlit
 google-generativeai
-mediapipe
