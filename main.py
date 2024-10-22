@@ -26,12 +26,10 @@ cap = cv2.VideoCapture(0)
 cap.set(3, 1280)
 cap.set(4, 720)
 
-
 detector = HandDetector(staticMode=False, maxHands=1, modelComplexity=0, detectionCon=0.7, minTrackCon=0.5)
 
 def getHandInfo(img):
     hands, img = detector.findHands(img, draw=False, flipType=True)
-
     if hands:
         hand = hands[0]
         lmList = hand["lmList"]
@@ -63,32 +61,27 @@ prev_pos = None
 canvas = None
 output_text = ""
 
-while run:
+if run:
     success, img = cap.read()
 
     if not success:
         st.warning("Webcam not found or not accessible.")
-        break
+    else:
+        img = cv2.flip(img, 1)
+        if canvas is None:
+            canvas = np.zeros_like(img)
 
-    img = cv2.flip(img, 1)
+        info = getHandInfo(img)
+        if info:
+            fingers, lmList = info
+            prev_pos, canvas = draw(info, prev_pos, canvas)
+            output_text = sendToAI(model, canvas, fingers)
 
-    if canvas is None:
-        canvas = np.zeros_like(img)
+        image_combined = cv2.addWeighted(img, 0.7, canvas, 0.3, 0)
+        FRAME_WINDOW.image(image_combined, channels="BGR")
 
-    info = getHandInfo(img)
-    if info:
-        fingers, lmList = info
-        prev_pos, canvas = draw(info, prev_pos, canvas)
-        output_text = sendToAI(model, canvas, fingers)
-
-    image_combined = cv2.addWeighted(img, 0.7, canvas, 0.3, 0)
-
-    FRAME_WINDOW.image(image_combined, channels="BGR")
-
-    if output_text:
-        output_text_area.text(output_text)
-
-    cv2.waitKey(1)
+        if output_text:
+            output_text_area.text(output_text)
 
 cap.release()
 cv2.destroyAllWindows()
